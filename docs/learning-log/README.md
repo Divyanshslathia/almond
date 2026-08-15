@@ -7,6 +7,7 @@ This log tracks what was learned during each feature implementation.
 - [001 - Project Skeleton](001-project-skeleton.md)
 - [002 - URL Parsing](002-url-parsing.md)
 - [003 - DNS Resolution](003-dns-resolution.md)
+- [004 - TCP Connection](004-tcp-connection.md)
 
 ## Purpose
 

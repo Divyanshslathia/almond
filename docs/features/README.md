@@ -19,6 +19,7 @@ See [03-dns-resolution.md](03-dns-resolution.md) for details.
 1. ✅ **Project Skeleton** - Repository structure, entry point, testing
 2. ✅ **URL Parsing** - Break URLs into components
 3. ✅ **DNS Resolution** - Resolve hostnames to IP addresses
+4. ✅ **TCP Connection** - Establish socket connections
 3. ⏳ **DNS Resolution** - Resolve hostnames to IP addresses
 4. ⏳ **TCP Connection** - Establish socket connections
 5. ⏳ **HTTP Request** - Send manual HTTP requests
