@@ -18,6 +18,11 @@ from browser.network import resolve_hostname
 from browser.connection import create_connection
 from browser.http import send_request
 from browser.response import parse_response
+from browser.html_parser import parse_html
+from browser.dom import build_dom, DOMElement, DOMText
+from browser.css_parser import parse_css
+from browser.style import calculate_styles
+from browser.layout import calculate_layout
 
 
 class BrowserWindow:
@@ -108,15 +113,19 @@ class BrowserWindow:
 
     def _create_viewport(self):
         """Create the viewport for displaying content."""
-        # For now, use a scrolled text widget to display raw content
-        # Later this will be replaced with actual rendering
-        self.viewport = scrolledtext.ScrolledText(
+        # Create a canvas for rendering
+        self.viewport = tk.Canvas(
             self.root,
-            wrap=tk.WORD,
-            font=("Courier", 10),
-            bg="white"
+            bg="white",
+            highlightthickness=0
         )
         self.viewport.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        # Bind click events for links
+        self.viewport.bind("<Button-1>", self._on_canvas_click)
+
+        # Store clickable areas (for links)
+        self.clickable_areas = []
 
     def navigate(self, url=None):
         """
@@ -206,24 +215,50 @@ class BrowserWindow:
         """
         Display a page in the viewport.
 
-        For now, this displays raw HTML.
-        Later it will render properly.
+        Now renders HTML properly using the rendering pipeline.
 
         Args:
             response: HTTPResponse object
         """
-        self.viewport.delete(1.0, tk.END)
+        # Clear canvas
+        self.viewport.delete("all")
+        self.clickable_areas = []
 
-        # Display status
-        self.viewport.insert(tk.END, f"Status: {response.status_code} {response.status_message}\n\n")
-
-        # Display body
         try:
-            # Try to decode as text
-            body_text = response.body.decode("utf-8", errors="replace")
-            self.viewport.insert(tk.END, body_text)
+            # Decode HTML
+            html_text = response.body.decode("utf-8", errors="replace")
+
+            # Parse HTML
+            html_root = parse_html(html_text)
+
+            # Build DOM
+            dom = build_dom(html_root)
+
+            # Extract CSS (simple: look for <style> tags)
+            css_rules = []
+            # For now, use empty CSS - we could extract from <style> tags later
+
+            # Apply styles
+            calculate_styles(dom, css_rules)
+
+            # Calculate layout
+            viewport_width = self.viewport.winfo_width()
+            if viewport_width < 100:  # Not initialized yet
+                viewport_width = 800
+            layout = calculate_layout(dom, viewport_width)
+
+            # Render
+            self._render_layout(layout)
+
         except Exception as e:
-            self.viewport.insert(tk.END, f"[Binary content, {len(response.body)} bytes]")
+            # Fallback to error display
+            self.viewport.create_text(
+                10, 10,
+                anchor=tk.NW,
+                text=f"Error rendering page: {e}",
+                fill="red",
+                font=("Arial", 12)
+            )
 
     def go_back(self):
         """Navigate back in history."""
