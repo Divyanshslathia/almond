@@ -1366,3 +1366,1053 @@ Can I explain it without Claude?
 ```
 
 If the answer to these questions is yes, the feature was successfully completed.
+
+---
+
+# 32. Current Project Status — Initial Networking Milestone Complete
+
+The original seven-feature networking milestone is considered **COMPLETE**.
+
+Treat the following as completed unless repository inspection proves otherwise:
+
+1. Project skeleton
+2. URL parsing
+3. DNS resolution
+4. TCP connection
+5. HTTP request
+6. HTTP response parsing
+7. Fetch and display a web page
+
+Do NOT rebuild these features from scratch merely for the sake of rebuilding them.
+
+Before making changes, inspect the existing repository and understand what is already implemented.
+
+If something from the seven-feature milestone is incomplete or broken, fix it as part of the current work and document the correction. Do not pretend it was complete if verification shows otherwise.
+
+The next goal is to turn the networking prototype into a **usable local mini-browser**, while continuing the same learning-first philosophy.
+
+---
+
+# 33. New Goal — Make the Browser Usable Locally
+
+The next stage is:
+
+> Build the view/UI, HTML parsing, DOM, basic CSS, layout, and rendering pipeline so that the browser can actually display pages locally.
+
+The immediate goal is NOT to compete with Chrome, Firefox, or WebKit.
+
+The goal is to understand and implement the major browser pipeline ourselves.
+
+The target progression is:
+
+```text
+URL
+ ↓
+Navigation
+ ↓
+DNS
+ ↓
+TCP
+ ↓
+HTTP
+ ↓
+Response
+ ↓
+HTML
+ ↓
+HTML Parser
+ ↓
+DOM
+ ↓
+CSS Parser
+ ↓
+Style Calculation
+ ↓
+Layout
+ ↓
+Render Tree
+ ↓
+Paint
+ ↓
+Local Browser Window
+```
+
+The result should be a small browser that can be launched locally and used to navigate to supported pages.
+
+---
+
+# 34. Frontend / UI Goal
+
+Build a minimal browser UI.
+
+The first usable UI should contain approximately:
+
+```text
+┌──────────────────────────────────────────────┐
+│  ←   →   ↻   [ URL / address bar        ]  │
+├──────────────────────────────────────────────┤
+│                                              │
+│              Rendered Web Page               │
+│                                              │
+│                                              │
+└──────────────────────────────────────────────┘
+```
+
+The UI should eventually support:
+
+- Address bar
+- Enter key navigation
+- Back
+- Forward
+- Reload
+- Page viewport
+- Basic scrolling
+- Clicking supported links
+- Displaying page content
+- Basic error display
+
+Do not add browser chrome/features that do not contribute to the learning objective.
+
+---
+
+# 35. GUI Library Rule
+
+Choose the simplest reasonable Python GUI approach that allows us to understand the rendering process.
+
+Before selecting a GUI framework/library:
+
+1. Explain the available options.
+2. Explain what the library provides.
+3. Explain what the library hides.
+4. Explain why we are choosing it.
+5. Keep the browser's own HTML/DOM/layout/rendering logic separate from the GUI library.
+
+The GUI library should primarily provide:
+
+```text
+Window
+Canvas / drawing surface
+Keyboard input
+Mouse input
+Scrolling/events
+```
+
+It should NOT become the browser engine.
+
+The browser engine should remain ours.
+
+---
+
+# 36. Feature Roadmap — DOM and Rendering Stage
+
+Implement the following as separate meaningful features.
+
+Do not combine all of them into one giant commit.
+
+## Feature 8 — Browser Application Shell
+
+Create the local browser window and basic browser UI.
+
+Implement:
+
+- Window
+- Address bar
+- Navigation trigger
+- Basic page viewport
+- Application entry point
+
+The existing networking pipeline should be connected to the UI.
+
+Commit:
+
+```text
+feat: add browser application shell
+```
+
+---
+
+## Feature 9 — HTML Tokenizer / Parser
+
+Build a small HTML parser.
+
+Start with a deliberately limited HTML subset.
+
+Support common elements such as:
+
+```text
+html
+head
+body
+title
+h1
+h2
+h3
+p
+div
+span
+a
+ul
+ol
+li
+br
+strong
+em
+img
+```
+
+Do not attempt full HTML specification compliance.
+
+The purpose is to understand:
+
+- Tokenization
+- Tags
+- Attributes
+- Text nodes
+- Nesting
+- Recursive parsing
+- Error recovery
+
+Commit:
+
+```text
+feat: add html parser
+```
+
+---
+
+## Feature 10 — DOM Tree
+
+Create an explicit DOM representation.
+
+Example:
+
+```text
+Document
+└── html
+    └── body
+        ├── h1
+        │   └── "Hello"
+        └── p
+            └── "Welcome"
+```
+
+Implement concepts such as:
+
+- Document
+- Element node
+- Text node
+- Parent
+- Children
+- Attributes
+
+The DOM should be independent from the GUI.
+
+Commit:
+
+```text
+feat: add dom tree
+```
+
+---
+
+## Feature 11 — DOM Inspection / Debug View
+
+Add a way to inspect the generated DOM while developing.
+
+For example:
+
+```text
+Document
+  html
+    body
+      h1
+        Text("Hello")
+```
+
+This can initially be a terminal/debug representation.
+
+The purpose is to make the invisible browser state visible.
+
+Commit:
+
+```text
+feat: add dom inspector
+```
+
+---
+
+## Feature 12 — CSS Parser
+
+Implement a small CSS parser.
+
+Initially support:
+
+```css
+body {
+    margin: 10px;
+}
+
+h1 {
+    font-size: 30px;
+}
+
+p {
+    margin: 5px;
+}
+```
+
+Start with:
+
+- Selectors
+- Properties
+- Values
+- Rules
+- Basic element selectors
+
+Later introduce:
+
+- Class selectors
+- ID selectors
+- Descendant selectors
+- Specificity
+- Cascade
+
+Do not attempt full CSS compatibility.
+
+Commit:
+
+```text
+feat: add css parser
+```
+
+---
+
+## Feature 13 — Style Calculation
+
+Connect CSS rules to DOM elements.
+
+The pipeline becomes:
+
+```text
+HTML
+ ↓
+DOM
+ ↓
+CSS
+ ↓
+CSS Rules
+ ↓
+Style Calculation
+ ↓
+Computed Style
+```
+
+Each renderable element should have the style information necessary for layout.
+
+Document:
+
+- Matching
+- Cascade
+- Specificity
+- Inheritance
+- Computed values
+
+Start simple.
+
+Commit:
+
+```text
+feat: add style calculation
+```
+
+---
+
+## Feature 14 — Layout Engine
+
+Implement a minimal layout engine.
+
+Start with block layout.
+
+Example:
+
+```text
+body
+ ↓
+h1
+ ↓
+p
+ ↓
+div
+```
+
+Calculate:
+
+- x
+- y
+- width
+- height
+
+Understand:
+
+- Coordinate systems
+- Box model
+- Margins
+- Padding
+- Content size
+- Block layout
+
+Do not initially attempt complete CSS layout.
+
+Commit:
+
+```text
+feat: add basic layout engine
+```
+
+---
+
+## Feature 15 — Render Tree
+
+Create a representation specifically for visual rendering.
+
+Understand the distinction:
+
+```text
+DOM
+ ↓
+Style
+ ↓
+Layout
+ ↓
+Render Tree
+```
+
+The DOM is not automatically the thing that gets painted.
+
+Document why the browser needs a rendering-oriented representation.
+
+Commit:
+
+```text
+feat: add render tree
+```
+
+---
+
+## Feature 16 — Text and Shape Painting
+
+Paint the layout result onto the browser viewport.
+
+Initially support:
+
+- Text
+- Rectangles
+- Basic backgrounds
+- Borders if practical
+
+The goal is not visual perfection.
+
+The goal is understanding:
+
+```text
+Layout coordinates
+       ↓
+Painting commands
+       ↓
+Graphics surface
+```
+
+Commit:
+
+```text
+feat: add basic renderer
+```
+
+---
+
+## Feature 17 — Navigation and Links
+
+Make supported `<a>` elements clickable.
+
+Flow:
+
+```text
+Mouse click
+ ↓
+Hit testing
+ ↓
+DOM/rendered element
+ ↓
+URL
+ ↓
+Navigation
+ ↓
+Network
+ ↓
+HTML
+ ↓
+DOM
+ ↓
+Layout
+ ↓
+Render
+```
+
+This is an important browser-engine milestone because it connects input, rendering, DOM, and networking.
+
+Commit:
+
+```text
+feat: add link navigation
+```
+
+---
+
+## Feature 18 — Scrolling
+
+Implement basic vertical scrolling.
+
+Understand:
+
+- Viewport
+- Document coordinates
+- Screen coordinates
+- Scroll offset
+- Repainting
+
+Commit:
+
+```text
+feat: add scrolling
+```
+
+---
+
+## Feature 19 — Browser History
+
+Implement:
+
+- Back
+- Forward
+- Navigation history
+
+Understand how navigation state differs from network state.
+
+Commit:
+
+```text
+feat: add browser history
+```
+
+---
+
+# 37. Local Usability Requirement
+
+At the end of the DOM/rendering stage, the project should be usable locally.
+
+A developer should be able to run something conceptually like:
+
+```text
+python -m browser
+```
+
+or another simple documented command and receive a browser window.
+
+Then:
+
+```text
+Enter URL
+    ↓
+Fetch
+    ↓
+Parse HTML
+    ↓
+Build DOM
+    ↓
+Parse CSS
+    ↓
+Calculate styles
+    ↓
+Layout
+    ↓
+Render
+```
+
+The exact command should match the repository's actual structure.
+
+Document the launch command in:
+
+```text
+docs/README.md
+README.md
+```
+
+---
+
+# 38. Local-First Rule
+
+Do NOT prioritize deployment yet.
+
+The immediate target is:
+
+```text
+Works on local machine
+```
+
+Deployment is a later learning exercise.
+
+Once the local browser is stable, we can optionally create a small deployment/demo environment for learning purposes.
+
+Do not introduce deployment infrastructure prematurely.
+
+---
+
+# 39. Browser Pipeline Documentation
+
+Create a dedicated document:
+
+```text
+docs/architecture/browser-pipeline.md
+```
+
+It must explain the complete pipeline:
+
+```text
+User Input
+    ↓
+Navigation
+    ↓
+URL
+    ↓
+DNS
+    ↓
+TCP
+    ↓
+HTTP
+    ↓
+Response
+    ↓
+HTML
+    ↓
+Parser
+    ↓
+DOM
+    ↓
+CSS
+    ↓
+Style
+    ↓
+Layout
+    ↓
+Render Tree
+    ↓
+Paint
+    ↓
+Viewport
+```
+
+For every stage, document:
+
+- Input
+- Output
+- Responsible module
+- Important functions
+- What happens conceptually
+- What Python does
+- What the OS does
+- What the browser engine does
+
+Every function reference must be clickable.
+
+---
+
+# 40. DOM Documentation
+
+Create:
+
+```text
+docs/concepts/dom.md
+```
+
+Explain:
+
+- What the DOM is
+- Why browsers need it
+- Node types
+- Parent/child relationships
+- Attributes
+- Text nodes
+- DOM vs HTML
+- DOM vs render tree
+- Where our DOM is implemented
+- Which functions create/manipulate it
+
+Include links directly to the implementation functions.
+
+---
+
+# 41. Rendering Documentation
+
+Create:
+
+```text
+docs/concepts/rendering.md
+```
+
+Explain:
+
+```text
+DOM
+ ↓
+Style
+ ↓
+Layout
+ ↓
+Render Tree
+ ↓
+Paint
+ ↓
+Screen
+```
+
+Explain the difference between:
+
+- Parsing
+- Styling
+- Layout
+- Painting
+
+Do not blur these concepts together.
+
+---
+
+# 42. Function Documentation Must Continue
+
+The clickable function documentation requirement remains mandatory.
+
+For every new important function:
+
+```text
+Function
+ ↓
+Source file
+ ↓
+Clickable link
+ ↓
+Explanation
+ ↓
+Callers
+ ↓
+Dependencies
+```
+
+Keep:
+
+```text
+docs/functions/README.md
+```
+
+updated.
+
+If source code moves or line numbers change, update links.
+
+---
+
+# 43. Feature Completion and Commits Continue
+
+The original seven features are complete.
+
+The next features must continue using:
+
+```text
+ONE MEANINGFUL FEATURE = ONE COMMIT
+```
+
+Therefore, the DOM/rendering stage should produce multiple commits rather than one giant commit.
+
+For example:
+
+```text
+feat: add browser application shell
+feat: add html parser
+feat: add dom tree
+feat: add dom inspector
+feat: add css parser
+feat: add style calculation
+feat: add basic layout engine
+feat: add render tree
+feat: add basic renderer
+feat: add link navigation
+feat: add scrolling
+feat: add browser history
+```
+
+Every commit must contain:
+
+```text
+Code
++
+Tests
++
+Documentation
+```
+
+and the repository must be in a working state after each feature whenever reasonably possible.
+
+---
+
+# 44. Do Not Skip the Learning
+
+For every DOM/frontend feature, explicitly teach:
+
+```text
+What the browser is doing
+        ↓
+What our data structure represents
+        ↓
+What function performs the work
+        ↓
+What the GUI library provides
+        ↓
+What our browser engine provides
+```
+
+For example, do not merely implement:
+
+```python
+render(node)
+```
+
+Explain:
+
+```text
+DOM node
+   ↓
+computed style
+   ↓
+layout box
+   ↓
+paint instruction
+   ↓
+canvas operation
+```
+
+The developer should understand this chain.
+
+---
+
+# 45. Testing the Browser
+
+As the browser becomes graphical, maintain both:
+
+## Unit tests
+
+For:
+
+- URL parsing
+- HTTP
+- HTML tokenization
+- HTML parsing
+- DOM
+- CSS parsing
+- Style calculation
+- Layout
+
+## Integration tests
+
+For:
+
+```text
+URL
+ ↓
+Network
+ ↓
+HTML
+ ↓
+DOM
+```
+
+## Manual GUI tests
+
+For:
+
+- Window opens
+- URL can be entered
+- Page renders
+- Links can be clicked
+- Scrolling works
+- Back/forward works
+
+Do not rely exclusively on screenshots for correctness.
+
+Where possible, test internal structures directly.
+
+---
+
+# 46. Use Local Test Pages
+
+Create a directory for deterministic browser test pages.
+
+For example:
+
+```text
+test_pages/
+├── basic.html
+├── nested.html
+├── links.html
+├── css.html
+├── layout.html
+└── long_page.html
+```
+
+These pages should be intentionally simple and designed to exercise one browser feature at a time.
+
+This avoids depending entirely on arbitrary internet websites.
+
+---
+
+# 47. Browser Compatibility Is Not the Goal
+
+Do not chase compatibility with arbitrary modern websites.
+
+A page that depends on:
+
+- JavaScript
+- complex CSS
+- frameworks
+- Web Components
+- modern browser APIs
+
+may fail.
+
+That is acceptable.
+
+Document unsupported features.
+
+The goal is:
+
+> Understand the browser pipeline by implementing a small, controlled subset.
+
+---
+
+# 48. Future Deployment — Later, Not Now
+
+Once the local browser works, deployment can become a separate learning phase.
+
+Potential future topics:
+
+- Packaging the application
+- Building a release
+- Running a demo
+- Hosting a test server
+- Client/server deployment
+- DNS
+- HTTPS certificates
+- Reverse proxies
+- Containers
+- Cloud deployment
+
+Do not implement these until the local browser is stable.
+
+The deployment stage should itself become separate features and separate commits.
+
+---
+
+# 49. Current Priority
+
+The priority order from this point forward is:
+
+```text
+1. Inspect existing implementation
+2. Verify the original seven features
+3. Do not unnecessarily rewrite completed work
+4. Build browser application shell
+5. Build HTML parser
+6. Build DOM
+7. Build CSS parser
+8. Build style calculation
+9. Build layout
+10. Build render tree
+11. Build renderer
+12. Add interaction
+13. Add scrolling
+14. Add history
+15. Stabilize local browser
+16. Only later explore deployment
+```
+
+---
+
+# 50. Final Definition of the Next Major Milestone
+
+The next major milestone is complete when:
+
+```text
+I can launch the browser locally
+        ↓
+Enter a supported URL
+        ↓
+Fetch the page
+        ↓
+Parse HTML
+        ↓
+Build DOM
+        ↓
+Parse supported CSS
+        ↓
+Calculate styles
+        ↓
+Perform layout
+        ↓
+Create render tree
+        ↓
+Paint the page
+        ↓
+See the page in our own browser window
+        ↓
+Click supported links
+        ↓
+Navigate
+        ↓
+Scroll
+        ↓
+Go back / forward
+```
+
+At that point we have moved from:
+
+```text
+HTTP client
+```
+
+to:
+
+```text
+Minimal browser engine + browser UI
+```
+
+That is the next major learning milestone.
+
+---
+
+# 51. Important Instruction to Claude
+
+The developer is explicitly authorizing you to continue implementing the project through the DOM, frontend, layout, rendering, and local usability stages.
+
+Do not stop after the original seven networking features merely because the original CLAUDE.md described seven initial features.
+
+Those seven features are now the completed foundation.
+
+Continue forward with the new roadmap in this document.
+
+However:
+
+- Do not skip tests.
+- Do not skip documentation.
+- Do not skip clickable function links.
+- Do not combine the entire frontend into one giant commit.
+- Do not introduce unnecessary complexity.
+- Do not hide browser concepts behind libraries when implementing the engine.
+- Keep the local browser usable after each meaningful milestone.
+- Commit after every completed meaningful feature.
+- Update documentation before every feature commit.

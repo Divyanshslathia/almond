@@ -11,6 +11,7 @@ This log tracks what was learned during each feature implementation.
 - [005 - HTTP Request](005-http-request.md)
 - [006 - HTTP Response](006-http-response.md)
 - [007 - Fetch Web Page](007-fetch-web-page.md)
+- [008 - Browser Application Shell](008-browser-shell.md)
 
 ## Purpose
 
