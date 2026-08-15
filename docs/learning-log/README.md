@@ -5,6 +5,7 @@ This log tracks what was learned during each feature implementation.
 ## Entries
 
 - [001 - Project Skeleton](001-project-skeleton.md)
+- [002 - URL Parsing](002-url-parsing.md)
 
 ## Purpose
 
