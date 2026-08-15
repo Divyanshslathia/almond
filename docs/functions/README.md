@@ -15,6 +15,13 @@ This is a central reference for all important functions in the browser.
 | `TCPConnection.connect()` | [connection.py](../../src/browser/connection.py) | Establish TCP connection |
 | `TCPConnection.send()` | [connection.py](../../src/browser/connection.py) | Send data over connection |
 | `TCPConnection.receive()` | [connection.py](../../src/browser/connection.py) | Receive data from connection |
+| `send_request()` | [http.py](../../src/browser/http.py) | Send HTTP request |
+| `HTTPRequest.build()` | [http.py](../../src/browser/http.py) | Build HTTP request bytes |
+| `get()` | [http.py](../../src/browser/http.py) | High-level GET request |
+| `parse_response()` | [response.py](../../src/browser/response.py) | Parse HTTP response |
+| `HTTPResponse._parse()` | [response.py](../../src/browser/response.py) | Internal response parsing |
+| `fetch_page()` | [main.py](../../src/browser/main.py) | Fetch complete web page |
+| `display_page()` | [main.py](../../src/browser/main.py) | Display fetched page |
 
 ## About This Index
 

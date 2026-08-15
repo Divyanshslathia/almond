@@ -8,6 +8,9 @@ This log tracks what was learned during each feature implementation.
 - [002 - URL Parsing](002-url-parsing.md)
 - [003 - DNS Resolution](003-dns-resolution.md)
 - [004 - TCP Connection](004-tcp-connection.md)
+- [005 - HTTP Request](005-http-request.md)
+- [006 - HTTP Response](006-http-response.md)
+- [007 - Fetch Web Page](007-fetch-web-page.md)
 
 ## Purpose
 
