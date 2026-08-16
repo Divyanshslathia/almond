@@ -50,6 +50,10 @@ class BrowserWindow:
         self.current_url = None
         self.current_response = None
 
+        # Scrolling state
+        self.scroll_offset = 0
+        self.content_height = 0
+
         # Build UI components
         self._create_navigation_bar()
         self._create_viewport()
@@ -113,16 +117,27 @@ class BrowserWindow:
 
     def _create_viewport(self):
         """Create the viewport for displaying content."""
+        # Create a frame to hold canvas and scrollbar
+        viewport_frame = tk.Frame(self.root)
+        viewport_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
         # Create a canvas for rendering
         self.viewport = tk.Canvas(
-            self.root,
+            viewport_frame,
             bg="white",
             highlightthickness=0
         )
-        self.viewport.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        self.viewport.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Create scrollbar
+        self.scrollbar = tk.Scrollbar(viewport_frame, command=self._on_scroll)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         # Bind click events for links
         self.viewport.bind("<Button-1>", self._on_canvas_click)
+
+        # Bind mouse wheel for scrolling
+        self.viewport.bind("<MouseWheel>", self._on_mousewheel)
 
         # Store clickable areas (for links)
         self.clickable_areas = []
@@ -234,9 +249,8 @@ class BrowserWindow:
             # Build DOM
             dom = build_dom(html_root)
 
-            # Extract CSS (simple: look for <style> tags)
-            css_rules = []
-            # For now, use empty CSS - we could extract from <style> tags later
+            # Extract CSS from <style> tags
+            css_rules = self._extract_css(html_root)
 
             # Apply styles
             calculate_styles(dom, css_rules)
@@ -247,8 +261,17 @@ class BrowserWindow:
                 viewport_width = 800
             layout = calculate_layout(dom, viewport_width)
 
+            # Calculate content height
+            self.content_height = self._calculate_content_height(layout)
+
+            # Reset scroll offset
+            self.scroll_offset = 0
+
+            # Update scrollbar
+            self._update_scrollbar()
+
             # Render
-            self._render_layout(layout)
+            self._render_layout(layout, self.scroll_offset)
 
         except Exception as e:
             # Fallback to error display
@@ -296,6 +319,109 @@ class BrowserWindow:
             self.forward_button.config(state=tk.NORMAL)
         else:
             self.forward_button.config(state=tk.DISABLED)
+
+    def _extract_css(self, html_node):
+        """
+        Extract CSS from <style> tags in HTML.
+
+        Args:
+            html_node: Root HTML node
+
+        Returns:
+            List of CSS rules
+        """
+        css_text = ""
+
+        def find_style_tags(node):
+            """Recursively find all <style> tags."""
+            nonlocal css_text
+            if hasattr(node, 'tag_name') and node.tag_name == 'style':
+                # Extract text content from style tag
+                for child in node.children:
+                    if hasattr(child, 'text'):
+                        css_text += child.text + "\n"
+            if hasattr(node, 'children'):
+                for child in node.children:
+                    find_style_tags(child)
+
+        find_style_tags(html_node)
+
+        # Parse CSS if any was found
+        if css_text.strip():
+            return parse_css(css_text)
+        return []
+
+    def _calculate_content_height(self, layout_box):
+        """Calculate the total height of the content."""
+        max_height = 0
+        for box in layout_box.children:
+            child_height = box.y + box.height
+            if child_height > max_height:
+                max_height = child_height
+            # Check children recursively
+            child_max = self._calculate_content_height(box)
+            if child_max > max_height:
+                max_height = child_max
+        return max_height
+
+    def _update_scrollbar(self):
+        """Update the scrollbar based on content height."""
+        viewport_height = self.viewport.winfo_height()
+        if viewport_height < 100:
+            viewport_height = 600
+
+        if self.content_height > viewport_height:
+            # Calculate scrollbar position
+            scroll_fraction = viewport_height / self.content_height
+            offset_fraction = self.scroll_offset / self.content_height
+            self.scrollbar.set(offset_fraction, offset_fraction + scroll_fraction)
+        else:
+            # No scrolling needed
+            self.scrollbar.set(0, 1)
+
+    def _on_scroll(self, *args):
+        """Handle scrollbar movement."""
+        if args[0] == 'moveto':
+            # Direct position
+            fraction = float(args[1])
+            viewport_height = self.viewport.winfo_height()
+            if viewport_height < 100:
+                viewport_height = 600
+            max_scroll = max(0, self.content_height - viewport_height)
+            self.scroll_offset = int(fraction * self.content_height)
+            self.scroll_offset = max(0, min(self.scroll_offset, max_scroll))
+        else:
+            # Scroll by units
+            direction = int(args[1])
+            self.scroll_offset += direction * 20
+            viewport_height = self.viewport.winfo_height()
+            if viewport_height < 100:
+                viewport_height = 600
+            max_scroll = max(0, self.content_height - viewport_height)
+            self.scroll_offset = max(0, min(self.scroll_offset, max_scroll))
+
+        # Re-render
+        if self.current_response:
+            self._display_page(self.current_response)
+
+    def _on_mousewheel(self, event):
+        """Handle mouse wheel scrolling."""
+        # Scroll up or down
+        delta = -1 if event.delta > 0 else 1
+        self.scroll_offset += delta * 30
+
+        viewport_height = self.viewport.winfo_height()
+        if viewport_height < 100:
+            viewport_height = 600
+        max_scroll = max(0, self.content_height - viewport_height)
+        self.scroll_offset = max(0, min(self.scroll_offset, max_scroll))
+
+        # Update scrollbar
+        self._update_scrollbar()
+
+        # Re-render
+        if self.current_response:
+            self._display_page(self.current_response)
 
     def run(self):
         """Start the browser application."""
